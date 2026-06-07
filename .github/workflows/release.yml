@@ -14,7 +14,7 @@ env:
   API_DESCRIPTION: "API de Integração Oficial"
   API_DEPENDENCIES: '["VaultAPI"]' # Mantenha a sintaxe de array JSON em string simples
   DISCORD_EMBED_TRIBE: "https://api.tribecraft.com.br/src/logo.png"
-  DISCORD_EMBED_THUMBNAIL: "https://api.tribecraft.com.br/src/clans_thumbnail.png"
+  DISCORD_EMBED_THUMBNAIL: "https://api.tribecraft.com.br/src/empty_thumbnail.png"
   # Configuração base limpa para evitar quebras de variáveis globais
   UPDATE_TITLE: "🔌 VaultAPI"
   UPDATE_MESSAGE: |
