@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.milkbowl.vault</groupId>
 	<artifactId>VaultAPI</artifactId>
-	<version>1.7</version>
+	<version>1.7-R6-RELEASE</version>
 	<name>VaultAPI</name>
 	<description>Vault is a Permissions &amp; Economy API to allow plugins to more easily hook into these systems without needing to hook each individual system themselves.
 
@@ -30,6 +30,10 @@ Vault currently supports the following: Permissions 3, PEX, GroupManager, bPerms
 		<developerConnection>scm:git:ssh://github.com/UlrichBR/VaultAPI.git</developerConnection>
 		<url>https://github.com/UlrichBR/VaultAPI/tree/main</url>
 	</scm>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.8</java.version>
+	</properties>
 	<build>
 		<plugins>
 			<plugin>
