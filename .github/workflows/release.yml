@@ -1,38 +1,239 @@
-name: Publish VaultAPI to GitHub Packages
+name: Release Automática de API (TribeCraft)
+#Extension: R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ENDPOINT, R2_BUCKET, DISCORD_WEBHOOK, DISCORD_RELEASES_WEBHOOK, SONATYPE_USERNAME, SONATYPE_PASSWORD, GPG_PRIVATE_KEY, GPG_PASSPHRASE
+
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      - '*'
+
+env:
+  MODULE_ID: "vaultapi" # ID da extensão para as pastas
+  PROJECT_FOLDER: "api/vault" # Pasta base no R2
+  MIN_JAVA_VERSION: "17"
+  # --- NOVAS CONFIGURAÇÕES DINÂMICAS PARA O MANIFESTO ---
+  API_DESCRIPTION: "API de Integração Oficial"
+  API_DEPENDENCIES: '["VaultAPI"]' # Mantenha a sintaxe de array JSON em string simples
+  DISCORD_EMBED_TRIBE: "https://api.tribecraft.com.br/src/logo.png"
+  DISCORD_EMBED_THUMBNAIL: "https://api.tribecraft.com.br/src/clans_thumbnail.png"
+  # Configuração base limpa para evitar quebras de variáveis globais
+  UPDATE_TITLE: "🔌 VaultAPI"
+  UPDATE_MESSAGE: |
+    Fork: VaultAPI
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: write
+  packages: write
+
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main branch
-        uses: actions/checkout@v2
-      - name: Checkout gh-pages branch
-        uses: actions/checkout@v2
-        with:
-          ref: gh-pages
-          path: gh-pages
-      - uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - name: Build and publish package
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          mvn -B javadoc:javadoc
-#         mvn -B deploy
-      - name: Commit javadocs
-        run: |
-          cp -Rfv target/javadoc-latest/* gh-pages/
-          cd gh-pages
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git commit -m "Update javadoc pages for latest release" -a
-      - name: Push javadoc changes
-        uses: ad-m/github-push-action@master
-        with:
-          branch: gh-pages
-          directory: gh-pages
-          github_token: ${{ github.token }}
+      - name: Checkout do código
+        uses: actions/checkout@v4
 
+      - name: Extrair Informações do Maven
+        run: |
+          echo "MAVEN_NAME=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout)" >> $GITHUB_ENV
+          echo "MAVEN_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.MIN_JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'maven'
+          # --- ADICIONE ESTAS LINHAS ABAIXO ---
+          server-id: central
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+
+      - name: Notificar Início (Discord)
+        run: |
+          VERSION_TAG="${{ github.ref_name }}"
+          curl -s -X POST -H "Content-Type: application/json" \
+               -d '{
+                 "username": "TribeCraft Build",
+                 "avatar_url": "${{ env.DISCORD_EMBED_THUMBNAIL }}",
+                 "embeds": [{
+                   "description": "⏳ **Iniciando Build da API: ${{ env.MAVEN_NAME }}** `'"$VERSION_TAG"'`\nPreparando ambiente...",
+                   "color": 16776960
+                 }]
+               }' \
+               ${{ secrets.DISCORD_WEBHOOK }}
+
+      # --- NOVA ETAPA: CONFIGURAÇÃO DO GPG PARA ASSINAR O ARTEFATO ---
+      - name: Configurar Chave GPG
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      # --- ETAPA ADAPTADA: COMPILA, EXECUTA O FLATTEN, ASSINA E ENVIA PARA O MAVEN CENTRAL ---
+      - name: Build e Deploy no Maven Central
+        env:
+          MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        run: |
+          mvn clean deploy \
+            -B \
+            --no-transfer-progress \
+            -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Localizar JAR e Processar Metadados
+        run: |
+          FILE=$(find target -name "*.jar" ! -name "original-*" | head -n 1)
+          echo "JAR_FILE=$FILE" >> $GITHUB_ENV
+          echo "JAR_NAME=$(basename $FILE)" >> $GITHUB_ENV
+          echo "JAR_HASH=$(sha256sum "$FILE" | cut -d ' ' -f1)" >> $GITHUB_ENV
+          echo "JAR_SIZE=$(stat -c%s "$FILE")" >> $GITHUB_ENV
+
+      - name: Notificar Compilação concluída (Discord)
+        if: success()
+        run: |
+          curl -s -X POST -H "Content-Type: application/json" \
+               -d '{
+                 "username": "TribeCraft Build",
+                 "avatar_url": "${{ env.DISCORD_EMBED_THUMBNAIL }}",
+                 "embeds": [{
+                   "description": "📦 **API Compilada e Enviada ao Maven Central: ${{ env.MAVEN_NAME }}**\n`${{ env.JAR_NAME }}`\nEnviando agora para o R2 e Git...",
+                   "color": 3447003
+                 }]
+               }' \
+               ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Criar Manifestos JSON
+        run: |
+          VERSION=${{ github.ref_name }}
+          mkdir -p manifests
+          
+          # latest.json
+          echo "{\"latest\": \"$VERSION\"}" > manifests/latest.json
+          
+          # version.json (Agora 100% dinâmico baseado no Maven e Env)
+          cat > manifests/${VERSION}.json <<EOF
+          {
+            "id": "${{ env.MODULE_ID }}",
+            "name": "${{ env.MAVEN_NAME }}",
+            "version": "$VERSION",
+            "channel": "stable",
+            "description": "${{ env.API_DESCRIPTION }}",
+            "authors": ["Ulrich"],
+            "core": { "min": "1.0.0" },
+            "java": { "min": ${{ env.MIN_JAVA_VERSION }} },
+            "dependencies": ${{ env.API_DEPENDENCIES }},
+            "optionalDependencies": [],
+            "file": {
+              "name": "${{ env.JAR_NAME }}",
+              "size": ${{ env.JAR_SIZE }},
+              "sha256": "${{ env.JAR_HASH }}"
+            },
+            "download": {
+              "path": "/api/${{ env.MODULE_ID }}/files/${{ env.JAR_NAME }}"
+            },
+            "release": {
+              "date": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+              "changelog": ["Release automática via GitHub Actions"]
+            }
+          }
+          EOF
+
+      - name: Upload para R2 (Cloudflare)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          # Upload do JAR
+          aws s3 cp "${{ env.JAR_FILE }}" "s3://$BUCKET/api/${{ env.MODULE_ID }}/files/${{ env.JAR_NAME }}" --endpoint-url=$ENDPOINT
+          
+          # Upload dos Manifestos
+          aws s3 cp manifests/latest.json "s3://$BUCKET/api/${{ env.MODULE_ID }}/latest.json" --endpoint-url=$ENDPOINT
+          aws s3 cp manifests/${{ github.ref_name }}.json "s3://$BUCKET/api/${{ env.MODULE_ID }}/versions/${{ github.ref_name }}.json" --endpoint-url=$ENDPOINT
+
+      - name: Criar Release no GitHub
+        uses: softprops/action-gh-release@v2
+        if: success()
+        with:
+          files: ${{ env.JAR_FILE }}
+          generate_release_notes: true
+          name: "API Release ${{ github.ref_name }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notificar Canal de Log (Simples)
+        if: success()
+        run: |
+          curl -s -X POST -H "Content-Type: application/json" \
+               -d '{"content": "🔌 API - **${{ env.MAVEN_NAME }}** `${{ env.MAVEN_VERSION }}` enviada ao Maven Central/R2/AWS/GIT!"}' \
+               ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Postar Notificação de Release (Elegante)
+        if: success()
+        shell: python3 {0}
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_RELEASES_WEBHOOK }}
+          RAW_MESSAGE: ${{ env.UPDATE_MESSAGE }}
+          RAW_TITLE: ${{ env.UPDATE_TITLE }}
+          MAVEN_NAME: ${{ env.MAVEN_NAME }}
+          MAVEN_VERSION: ${{ env.MAVEN_VERSION }}
+          TRIBE: ${{ env.DISCORD_EMBED_TRIBE }}
+          THUMB: ${{ env.DISCORD_EMBED_THUMBNAIL }}
+          GITHUB_REPO_URL: "${{ github.server_url }}/${{ github.repository }}"
+        run: |
+          import os, json, requests
+          
+          m_name = os.getenv("MAVEN_NAME", "")
+          m_ver = os.getenv("MAVEN_VERSION", "")
+          repo_url = os.getenv("GITHUB_REPO_URL", "")
+          eco_name = os.getenv("ECO_NAME", "")
+          
+          if not eco_name:
+              eco_name = m_name.replace("-API", "").replace("-api", "").strip()
+          
+          def clean_text(text):
+              if not text: return ""
+              text = text.replace("[B]", "**").replace("[/B]", "**")
+              text = text.replace("[I]", "*").replace("[/I]", "*")
+              return text.strip()
+          
+          final_title = f"🔌 {m_name}"
+          
+          msg_linhas = [
+              f"**Eco:** {eco_name}",
+              f"**Update:** v{m_ver}",
+              clean_text(os.getenv("RAW_MESSAGE")).split("\n")[-1],
+              f"**Url:** {repo_url}"
+          ]
+          final_description = "\n".join(msg_linhas)
+          
+          payload = {
+              "username": "TribeCraft Build",
+              "avatar_url": os.getenv("TRIBE"),
+              "embeds": [{
+                  "title": final_title,
+                  "description": final_description,
+                  "color": 10181046,
+                  "thumbnail": {"url": os.getenv("THUMB")},
+                  "footer": {"text": f"API: {m_name} | TribeCraft Studios", "icon_url": os.getenv("TRIBE")}
+              }]
+          }
+          
+          webhook = os.getenv("WEBHOOK_URL")
+          if webhook: 
+              requests.post(webhook, json=payload)
+
+      - name: Notificar Falha (Discord)
+        if: failure()
+        run: |
+          curl -H "Content-Type: application/json" \
+               -d '{
+                 "username": "TribeCraft Build",
+                 "embeds": [{
+                   "title": "❌ Erro na API",
+                   "description": "Falha ao compilar ou publicar `${{ env.MAVEN_NAME }}`.\n[Ver Erro](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})",
+                   "color": 15158332
+                 }]
+               }' \
+               ${{ secrets.DISCORD_WEBHOOK }}
