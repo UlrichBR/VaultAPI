@@ -1,34 +1,61 @@
-# VaultAPI - Abstraction Library API for Bukkit Plugins - [![](https://travis-ci.org/MilkBowl/VaultAPI.svg?branch=master)](https://travis-ci.org/MilkBowl/VaultAPI)
+# VaultAPI - Abstraction Library API for Bukkit Plugins
 
-How to include the API with Maven: 
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.ulrichbr/VaultAPI?color=blue&label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.ulrichbr/VaultAPI)
+[![](https://jitpack.io/v/UlrichBR/VaultAPI.svg)](https://jitpack.io/#UlrichBR/VaultAPI)
+[![Java Version](https://img.shields.io/badge/Java-8-orange?logo=openjdk)](https://pom.xml)
+
+## 🚀 How to Integrate into Your Project
+
+Choose one of the repositories below to add the VaultAPI API as a dependency in your build manager (Maven).
+
+### Option 1: Maven Central (Recommended)
+The official, fastest, and most stable method. It does not require adding any extra repository to your `pom.xml`, as the Maven ecosystem fetches the artifacts natively.
+
+```xml
+	implementation("io.github.ulrichbr:VaultAPI:$VERSION")
+```
+
+```xml
+<dependency>
+    <groupId>io.github.ulrichbr</groupId>
+    <artifactId>VaultAPI</artifactId>
+    <version>$VERSION</version>
+</dependency>
+```
+
+### Option 2: JitPack (Alternative)
+Use this option if you need to compile specific commits from branches or legacy versions hosted directly on the GitHub repository.
+
+```xml
+
+	dependencyResolutionManagement {
+		repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+		repositories {
+			mavenCentral()
+			maven { url 'https://jitpack.io' }
+		}
+	}
+
+	dependencies {
+	        implementation 'com.github.UlrichBR:VaultAPI:$VERSION'
+	}
+```
+
 ```xml
 <repositories>
     <repository>
         <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
+        <url>[https://jitpack.io](https://jitpack.io)</url>
     </repository>
 </repositories>
-<dependencies>
-    <dependency>
-        <groupId>com.github.MilkBowl</groupId>
-        <artifactId>VaultAPI</artifactId>
-        <version>1.7</version>
-        <scope>provided</scope>
-    </dependency>
-</dependencies>
+
+	<dependency>
+	    <groupId>com.github.UlrichBR</groupId>
+	    <artifactId>VaultAPI</artifactId>
+	    <version>$VERSION</version>
+	</dependency>
 ```
 
-How to include the API with Gradle:
-```groovy
-repositories {
-    maven { url 'https://jitpack.io' }
-}
-dependencies {
-    compileOnly "com.github.MilkBowl:VaultAPI:1.7"
-}
-```
-
-**Note**: The VaultAPI version has 2 numbers (major.minor), unlike Vault, which has 3. The 2 numbers in the VaultAPI will always correspond to the 2 beginning numbers in a Vault version to make it clear what versions your plugin will for sure work with.
 
 ## Why Vault?
 I have no preference which library suits your plugin and development efforts
