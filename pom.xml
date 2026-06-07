@@ -10,50 +10,29 @@
 
 Vault currently supports the following: Permissions 3, PEX, GroupManager, bPerms, bPerms2, SimplyPerms, DroxPerms, zPermissions, rscPermissions, KPerms, Starburst, iConomy (4/5/6) BOSEconomy *6/7), EssentialsEcon, 3Co, MultiConomy, MineConomy, EconXP, eWallet, CurrencyCore, XPBank, CraftConomy, AEco, SDFEconomy, TAEcon
     </description>
-	<url>http://dev.bukkit.org/server-mods/vault/</url>
-
+	<url>https://github.com/UlrichBR/VaultAPI</url>
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://www.opensource.org/licenses/mit-license.php</url>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<name>Ulrich</name>
+			<email>unixmc@hotmail.com</email>
+			<url>https://github.com/UlrichBR</url>
+		</developer>
+	</developers>
+	<scm>
+		<connection>scm:git:git://github.com/UlrichBR/VaultAPI.git</connection>
+		<developerConnection>scm:git:ssh://github.com/UlrichBR/VaultAPI.git</developerConnection>
+		<url>https://github.com/UlrichBR/VaultAPI/tree/main</url>
+	</scm>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<bukkitVersion>1.13.1-R0.1-SNAPSHOT</bukkitVersion>
 	</properties>
-
-	<!-- Organization -->
-	<organization>
-		<name>MilkBowl</name>
-		<url>https://github.com/MilkBowl</url>
-	</organization>
-
-	<scm>
-		<url>https://github.com/MilkBowl/VaultAPI</url>
-		<connection>scm:git:git://github.com:MilkBowl/VaultAPI.git</connection>
-		<developerConnection>scm:git:git@github.com:MilkBowl/VaultAPI.git</developerConnection>
-	</scm>
-
-	<ciManagement>
-		<system>Travis-CI</system>
-		<url>https://travis-ci.org/MilkBowl/VaultAPI</url>
-	</ciManagement>
-
-	<issueManagement>
-		<system>GitHub</system>
-		<url>https://github.com/MilkBowl/VaultAPI/issues</url>
-	</issueManagement>
-
-	<repositories>
-		<repository>
-            <id>spigot-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
-		</repository>
-	</repositories>
-
-	<distributionManagement>
- 		<repository>
-      		<id>github</id>
-      		<name>GitHub Packages</name>
-      		<url>https://maven.pkg.github.com/milkbowl/github-releases</url>
-    	</repository>
-	</distributionManagement>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.bukkit</groupId>
