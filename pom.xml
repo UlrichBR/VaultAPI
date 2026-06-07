@@ -1,16 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project
 	xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.github.ulrichbr</groupId>
 	<artifactId>VaultAPI</artifactId>
-	<version>1.7-R7-RELEASE</version>
+	<version>1.7.0-R8-RELEASE</version>
 	<name>VaultAPI</name>
-	<description>Vault is a Permissions &amp; Economy API to allow plugins to more easily hook into these systems without needing to hook each individual system themselves.
-
-Vault currently supports the following: Permissions 3, PEX, GroupManager, bPerms, bPerms2, SimplyPerms, DroxPerms, zPermissions, rscPermissions, KPerms, Starburst, iConomy (4/5/6) BOSEconomy *6/7), EssentialsEcon, 3Co, MultiConomy, MineConomy, EconXP, eWallet, CurrencyCore, XPBank, CraftConomy, AEco, SDFEconomy, TAEcon
-    </description>
+	<description>VaultAPI.</description>
 	<url>https://github.com/UlrichBR/VaultAPI</url>
 	<licenses>
 		<license>
@@ -26,7 +25,7 @@ Vault currently supports the following: Permissions 3, PEX, GroupManager, bPerms
 		</developer>
 	</developers>
 	<scm>
-		<connection>scm:git:git://github.com/UlrichBR/VaultAPI.git</connection>
+		<connection>scm:git:git://github.com/UlrichBR/UKoth-API.git</connection>
 		<developerConnection>scm:git:ssh://github.com/UlrichBR/VaultAPI.git</developerConnection>
 		<url>https://github.com/UlrichBR/VaultAPI/tree/main</url>
 	</scm>
@@ -84,13 +83,6 @@ Vault currently supports the following: Permissions 3, PEX, GroupManager, bPerms
 						<goals>
 							<goal>shade</goal>
 						</goals>
-						<configuration>
-							<transformers>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>net.milkbowl.vault.VaultAPI</mainClass>
-								</transformer>
-							</transformers>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -171,20 +163,11 @@ Vault currently supports the following: Permissions 3, PEX, GroupManager, bPerms
 		</repository>
 	</repositories>
 	<dependencies>
-		<!-- Test Dependency -->
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
 			<version>1.16.5-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.13.1</version>
-			<type>jar</type>
-			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
 	</dependencies>
